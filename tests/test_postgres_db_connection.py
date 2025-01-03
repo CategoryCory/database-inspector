@@ -8,10 +8,11 @@ from typing import cast, Generator, LiteralString
 from src.database.db_base import DbBase, DbColumn
 from src.database.postgres_db_connection import PostgresDbConnection, PostgresConnParams
 
+postgres: PostgresContainer = PostgresContainer("postgres:16-alpine")
+
 
 @pytest.fixture(scope="module", autouse=True)
 def postgres_db(request: FixtureRequest) -> Generator[DbBase, None]:
-    postgres: PostgresContainer = PostgresContainer("postgres:16-alpine")
     postgres.start()
 
     def remove_container() -> None:
