@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "database-inspector"
+version = "0.1.0"
+description = "A CLI tool created to inspect databases and build Python models based on the schema."
+authors = ["Cory Coward <corydottech@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+astor = "^0.8.1"
+inflect = "^7.5.0"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.14.1"
+ruff = "^0.8.4"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.4"
+testcontainers = {extras = ["postgres"], version = "^4.9.0"}
+
+
+[tool.poetry.group.postgres.dependencies]
+psycopg = {extras = ["binary"], version = "^3.2.3"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = ["testcontainers.postgres.*"]
+ignore_missing_imports = true
