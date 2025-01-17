@@ -17,6 +17,7 @@ def db_results_to_dict(cursor: MSSQLCursor) -> list[dict[str, str]]:
     :return: A dictionary representation of the result.
     :rtype: list[dict[str, str]]
     """
+
     column_names = [col[0] for col in cursor.description]
     results = []
     for row in cursor.fetchall():

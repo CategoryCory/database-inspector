@@ -19,6 +19,7 @@ class SqliteDbConnection(DbBase[SqliteConnection, SqliteConnParams]):
         :param connection_params: The connection parameters for the SQLite database.
         :type connection_params: SqliteConnParams
         """
+
         super().__init__(connection_params)
         self._connection: SqliteConnection | None = None
         self._connect()
