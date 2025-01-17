@@ -5,7 +5,7 @@ from mysql.connector.abstracts import MySQLConnectionAbstract
 from mysql.connector.pooling import PooledMySQLConnection
 from os import PathLike
 
-from src.database_inspector.infrastructure.models import DbColumn
+from database_inspector.infrastructure.models import DbColumn
 
 
 type SqliteConnParams = str | bytes | PathLike[str] | PathLike[bytes]

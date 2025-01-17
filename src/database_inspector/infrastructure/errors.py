@@ -4,7 +4,7 @@ from database_inspector.infrastructure.enums import DatabaseType
 class DbConnectionError(ConnectionError):
     """Custom exception raised when database connection fails."""
 
-    def __init__(self, message: str, db_type: DatabaseType = None) -> None:
+    def __init__(self, message: str, db_type: DatabaseType) -> None:
         """
         Initialize an instance of the DbConnectionError class.
 
