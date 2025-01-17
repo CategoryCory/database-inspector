@@ -8,7 +8,7 @@ class DatabaseType(Enum):
     This enum is used to indicate the type of database being used.
     """
 
-    SQLITE = auto()
+    SQLITE = 0
     """A SQLite database type."""
 
     POSTGRESQL = auto()
@@ -30,7 +30,7 @@ class ConnectionStatus(Enum):
     SQL queries.
     """
 
-    CONNECTED = auto()
+    CONNECTED = 0
     """The connection is currently open and _connection is not None."""
 
     DISCONNECTED = auto()

@@ -3,10 +3,10 @@ from collections.abc import Generator
 from pathlib import Path
 
 from .common import expected_test_table_results, expected_test_table_2_results
-from src import DbBase
-from src.database_inspector.infrastructure.enums import ConnectionStatus
-from src import DbColumn
-from src import SqliteDbConnection
+from database_inspector.db.db_base import DbBase
+from database_inspector.infrastructure.enums import ConnectionStatus
+from database_inspector.infrastructure.models import DbColumn
+from database_inspector.db.sqlite_db_connection import SqliteDbConnection
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@ from testcontainers.mssql import SqlServerContainer
 from testcontainers.mysql import MySqlContainer
 from testcontainers.postgres import PostgresContainer
 
-from src import DbColumn
+from database_inspector.infrastructure.models import DbColumn
 
 type SupportedContainerClasses = PostgresContainer | MySqlContainer | SqlServerContainer
 

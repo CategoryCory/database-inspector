@@ -2,10 +2,10 @@ import pyodbc  # type: ignore
 from pyodbc import Connection as MSSQLConnection, Cursor as MSSQLCursor
 from typing import cast, LiteralString
 
-from src.database_inspector.database.db_base import DbBase
-from src.database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
-from src.database_inspector.infrastructure.errors import DbConnectionError
-from src.database_inspector.infrastructure.models import ConnectionParams, DbColumn
+from database_inspector.db.db_base import DbBase
+from database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
+from database_inspector.infrastructure.errors import DbConnectionError
+from database_inspector.infrastructure.models import ConnectionParams, DbColumn
 
 
 def db_results_to_dict(cursor: MSSQLCursor) -> list[dict[str, str]]:

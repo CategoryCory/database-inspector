@@ -2,7 +2,7 @@ import ast
 import inflect
 from datetime import datetime
 
-from src.database_inspector.infrastructure.models import DbColumn
+from database_inspector.infrastructure.models import DbColumn
 
 
 def get_singular(word: str) -> str:

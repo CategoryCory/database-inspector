@@ -12,12 +12,12 @@ from .common import (
     expected_test_table_results,
     expected_test_table_2_results,
 )
-from src import DbBase
-from src.database_inspector.infrastructure.enums import ConnectionStatus
-from src import ConnectionParams, DbColumn
-from src import MSSqlDbConnection
-from src import MySqlDbConnection
-from src import PostgresDbConnection
+from database_inspector.db.db_base import DbBase
+from database_inspector.infrastructure.enums import ConnectionStatus
+from database_inspector.infrastructure.models import ConnectionParams, DbColumn
+from database_inspector.db.mssql_db_connection import MSSqlDbConnection
+from database_inspector.db.mysql_db_connection import MySqlDbConnection
+from database_inspector.db.postgres_db_connection import PostgresDbConnection
 
 
 @dataclass(slots=True, frozen=True)

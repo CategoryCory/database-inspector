@@ -1,4 +1,4 @@
-from src.database_inspector.infrastructure.enums import DatabaseType
+from database_inspector.infrastructure.enums import DatabaseType
 
 
 class DbConnectionError(ConnectionError):

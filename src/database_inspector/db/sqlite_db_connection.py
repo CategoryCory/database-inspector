@@ -2,7 +2,7 @@ import sqlite3
 from sqlite3 import Connection as SqliteConnection
 from typing import cast, LiteralString
 
-from database_inspector.database.db_base import DbBase
+from database_inspector.db.db_base import DbBase
 from database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
 from database_inspector.infrastructure.errors import DbConnectionError
 from database_inspector.infrastructure.models import DbColumn
