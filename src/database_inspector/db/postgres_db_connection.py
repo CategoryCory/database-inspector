@@ -1,7 +1,7 @@
+from typing import cast, LiteralString
 import psycopg
 from psycopg import Connection as PostgresConnection
 from psycopg.rows import dict_row
-from typing import cast, LiteralString
 
 from database_inspector.db.db_base import DbBase
 from database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
@@ -34,7 +34,8 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
         try:
             conn_str = (
                 f"postgresql://{self._connection_params.user}:{self._connection_params.password}"
-                f"@{self._connection_params.host}:{self._connection_params.port}/{self._connection_params.database}"
+                f"@{self._connection_params.host}:{self._connection_params.port}/"
+                f"{self._connection_params.database}"
             )
             self._connection = psycopg.connect(conn_str)
         except psycopg.Error as error:
@@ -49,7 +50,7 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
             self._connection is not None
             and self.get_connection_status() == ConnectionStatus.CONNECTED
         ):
-            self._connection.close()
+            self._connection.close()  # pylint: disable=E1101
             self._connection = None
 
     def get_connection_status(self) -> ConnectionStatus:
@@ -60,10 +61,9 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
         :rtype: ConnectionStatus
         """
 
-        if self._connection is not None and self._connection.closed:
+        if self._connection is not None and self._connection.closed:  # pylint: disable=E1101
             return ConnectionStatus.DISCONNECTED
-        else:
-            return ConnectionStatus.CONNECTED
+        return ConnectionStatus.CONNECTED
 
     def get_tables(self) -> list[str]:
         """
@@ -89,7 +89,7 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
         WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
         """
 
-        with self._connection.cursor(row_factory=dict_row) as cursor:
+        with self._connection.cursor(row_factory=dict_row) as cursor:  # pylint: disable=E1101
             cursor.execute(query)
             return [row["table_name"] for row in cursor.fetchall()]
 
@@ -123,7 +123,7 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
         )
         table_cols: list[DbColumn] = []
 
-        with self._connection.cursor(row_factory=dict_row) as cursor:
+        with self._connection.cursor(row_factory=dict_row) as cursor:  # pylint: disable=E1101
             cursor.execute(query)
             columns = cursor.fetchall()
             for c in columns:

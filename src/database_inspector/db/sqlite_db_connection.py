@@ -62,8 +62,7 @@ class SqliteDbConnection(DbBase[SqliteConnection, SqliteConnParams]):
             if self._connection is not None:
                 self._connection.cursor()
                 return ConnectionStatus.CONNECTED
-            else:
-                return ConnectionStatus.DISCONNECTED
+            return ConnectionStatus.DISCONNECTED
         except sqlite3.ProgrammingError:
             return ConnectionStatus.DISCONNECTED
 
@@ -85,7 +84,13 @@ class SqliteDbConnection(DbBase[SqliteConnection, SqliteConnParams]):
                 DatabaseType.SQLITE,
             )
 
-        query: LiteralString = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
+        query: LiteralString = cast(
+            LiteralString,
+            (
+                "SELECT name FROM sqlite_master "
+                "WHERE type='table' AND name NOT LIKE 'sqlite_%';"
+            ),
+        )
         cursor = self._connection.execute(query)
         return [row["name"] for row in cursor.fetchall()]
 

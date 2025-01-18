@@ -1,6 +1,6 @@
-import mysql.connector
 from dataclasses import asdict
 from typing import cast, LiteralString
+import mysql.connector
 
 from database_inspector.db.db_base import DbBase
 from database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
@@ -62,8 +62,7 @@ class MySqlDbConnection(DbBase[MySQLConnectionTypes, ConnectionParams]):
 
         if self._connection is not None and self._connection.is_connected():
             return ConnectionStatus.CONNECTED
-        else:
-            return ConnectionStatus.DISCONNECTED
+        return ConnectionStatus.DISCONNECTED
 
     def get_tables(self) -> list[str]:
         """

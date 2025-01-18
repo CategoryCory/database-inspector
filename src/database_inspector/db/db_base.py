@@ -7,7 +7,7 @@ from database_inspector.infrastructure.enums import ConnectionStatus
 from database_inspector.infrastructure.models import DbColumn, python_type_map
 
 
-class DbBase[TConnection, TConnParams](ABC):
+class DbBase[ConnectionT, ConnParamsT](ABC):
     """
     An abstract base class for database connections.
 
@@ -15,7 +15,7 @@ class DbBase[TConnection, TConnParams](ABC):
     databases. Concrete implementations should inherit from this class.
     """
 
-    _connection: TConnection | None
+    _connection: ConnectionT | None
 
     _db_type_to_python_type: dict[str, type] = {
         db_type: python_type
@@ -23,7 +23,7 @@ class DbBase[TConnection, TConnParams](ABC):
         for db_type in db_types
     }
 
-    def __init__(self, conn_params: TConnParams) -> None:
+    def __init__(self, conn_params: ConnParamsT) -> None:
         """
         Initialize a database connection.
 
@@ -31,7 +31,7 @@ class DbBase[TConnection, TConnParams](ABC):
         :func: `super().__init__()`.
 
         :param conn_params: The connection parameters.
-        :type conn_params: TConnParams
+        :type conn_params: ConnParamsT
         """
 
         self._connection_params = conn_params
@@ -66,13 +66,13 @@ class DbBase[TConnection, TConnParams](ABC):
         self.close()
 
     @property
-    def connection(self) -> TConnection | None:
+    def connection(self) -> ConnectionT | None:
         """
         Retrieve the database connection instance. If the connection is
         closed, the connection will be None.
 
         :return: The DbBase connection, or None if the connection is closed.
-        :rtype: TConnection | None
+        :rtype: ConnectionT | None
         """
 
         return self._connection
@@ -80,8 +80,6 @@ class DbBase[TConnection, TConnParams](ABC):
     @abstractmethod
     def close(self) -> None:
         """Close the database connection."""
-
-        pass
 
     @abstractmethod
     def get_connection_status(self) -> ConnectionStatus:
@@ -92,8 +90,6 @@ class DbBase[TConnection, TConnParams](ABC):
         :rtype: ConnectionStatus
         """
 
-        pass
-
     @abstractmethod
     def get_tables(self) -> list[str]:
         """
@@ -102,8 +98,6 @@ class DbBase[TConnection, TConnParams](ABC):
         :return: A list of tables in the database.
         :rtype: list[str]
         """
-
-        pass
 
     @abstractmethod
     def get_columns(self, table_name: str) -> list[DbColumn]:
@@ -115,8 +109,6 @@ class DbBase[TConnection, TConnParams](ABC):
         :return: A list of column information in `table_name`.
         :rtype: list[DbColumn]
         """
-
-        pass
 
     def _get_python_type(self, db_type: str) -> type | None:
         """

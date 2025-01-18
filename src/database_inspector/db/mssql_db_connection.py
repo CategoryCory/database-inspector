@@ -1,6 +1,6 @@
-import pyodbc  # type: ignore
-from pyodbc import Connection as MSSQLConnection, Cursor as MSSQLCursor
 from typing import cast, LiteralString
+import pyodbc  # type: ignore
+from pyodbc import Connection as MSSQLConnection, Cursor as MSSQLCursor  # pylint: disable=E0611
 
 from database_inspector.db.db_base import DbBase
 from database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
@@ -55,8 +55,8 @@ class MSSqlDbConnection(DbBase[MSSQLConnection, ConnectionParams]):
             f"PWD={self._connection_params.password};TrustServerCertificate=Yes"
         )
         try:
-            self._connection = pyodbc.connect(conn_str)
-        except pyodbc.Error as error:
+            self._connection = pyodbc.connect(conn_str)  # pylint: disable=I1101
+        except pyodbc.Error as error:  # pylint: disable=I1101
             raise DbConnectionError(
                 f"Connection to database failed: {error}", DatabaseType.MSSQL
             ) from error
@@ -81,8 +81,7 @@ class MSSqlDbConnection(DbBase[MSSQLConnection, ConnectionParams]):
 
         if self._connection is not None and self._connection.closed:
             return ConnectionStatus.DISCONNECTED
-        else:
-            return ConnectionStatus.CONNECTED
+        return ConnectionStatus.CONNECTED
 
     def get_tables(self) -> list[str]:
         """
