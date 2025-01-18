@@ -1,3 +1,27 @@
+"""
+sqlite_db_connection.py
+=======================
+
+This module provides an implementation of the :class:`database_inspector.db.DbBase` abstract
+base class for inspecting SQLite databases.
+
+Classes
+-------
+
+- **SqliteDbConnection**: Implements :class:`database_inspector.db.DbBase` for inspecting SQLite
+databases.
+
+Usage Example
+-------------
+
+.. code-block:: python
+
+    from database_inspector.db.sqlite_db_connection import SqliteDbConnection
+
+    with SqliteDbConnection(connection_params) as db:
+        db.get_tables()
+"""
+
 import sqlite3
 from sqlite3 import Connection as SqliteConnection
 from typing import cast, LiteralString

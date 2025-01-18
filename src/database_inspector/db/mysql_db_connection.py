@@ -1,3 +1,27 @@
+"""
+mysql_db_connection.py
+=========================
+
+This module provides an implementation of the :class:`database_inspector.db.DbBase` abstract
+base class for inspecting MySQL databases.
+
+Classes
+-------
+
+- **MySqlDbConnection**: Implements :class:`database_inspector.db.DbBase` for inspecting
+MySQL databases.
+
+Usage Example
+-------------
+
+.. code-block:: python
+
+    from database_inspector.db.mysql_db_connection import MySqlDbConnection
+
+    with MySqlDbConnection(connection_params) as db:
+        db.get_tables()
+"""
+
 from dataclasses import asdict
 from typing import cast, LiteralString
 import mysql.connector

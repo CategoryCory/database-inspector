@@ -1,3 +1,26 @@
+"""
+db_base.py
+==========
+
+This module provides an abstract base class for working with databases. Classes which
+implement specific database connections should inherit from this base class.
+
+Classes
+-------
+
+- **DbBase**: A context manager abstract base class for working with databases.
+
+Usage Example
+-------------
+
+.. code-block:: python
+
+    from database_inspector.db import DbBase
+
+    class ConcreteDbImplementation(DbBase[ConnectionT, ConnParamsT]):
+        ...
+"""
+
 import re
 from abc import ABC, abstractmethod
 from types import TracebackType

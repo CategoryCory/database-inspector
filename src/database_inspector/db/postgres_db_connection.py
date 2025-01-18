@@ -1,3 +1,27 @@
+"""
+postgres_db_connection.py
+=========================
+
+This module provides an implementation of the :class:`database_inspector.db.DbBase` abstract
+base class for inspecting PostgreSQL databases.
+
+Classes
+-------
+
+- **PostgresDbConnection**: Implements :class:`database_inspector.db.DbBase` for inspecting
+PostgreSQL databases.
+
+Usage Example
+-------------
+
+.. code-block:: python
+
+    from database_inspector.db.postgres_db_connection import PostgresDbConnection
+
+    with PostgresDbConnection(connection_params) as db:
+        db.get_tables()
+"""
+
 from typing import cast, LiteralString
 import psycopg
 from psycopg import Connection as PostgresConnection

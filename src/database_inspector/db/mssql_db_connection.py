@@ -1,3 +1,33 @@
+"""
+mssql_db_connection.py
+=========================
+
+This module provides an implementation of the :class:`database_inspector.db.DbBase` abstract
+base class for inspecting Microsoft SQL Server databases.
+
+Classes
+-------
+
+- **MSSqlDbConnection**: Implements :class:`database_inspector.db.DbBase` for inspecting
+Microsoft SQL Server databases.
+
+Functions
+---------
+
+- **db_results_to_dict(cursor: MSSQLCursor)**: Converts the results of a database query
+into a dictionary.
+
+Usage Example
+-------------
+
+.. code-block:: python
+
+    from database_inspector.db.mssql_db_connection import MSSqlDbConnection
+
+    with MSSqlDbConnection(connection_params) as db:
+        db.get_tables()
+"""
+
 from typing import cast, LiteralString
 import pyodbc  # type: ignore
 from pyodbc import Connection as MSSQLConnection, Cursor as MSSQLCursor  # pylint: disable=E0611
