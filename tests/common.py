@@ -1,3 +1,10 @@
+"""
+common.py
+=========
+
+This module contains expected test results for unit tests.
+"""
+
 from datetime import date, datetime
 from testcontainers.mssql import SqlServerContainer
 from testcontainers.mysql import MySqlContainer

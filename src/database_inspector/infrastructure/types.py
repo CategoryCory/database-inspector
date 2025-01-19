@@ -1,4 +1,9 @@
-"""This module defines common type aliases used throughout the application."""
+"""
+types.py
+========
+
+This module defines common type aliases used throughout the application.
+"""
 
 from os import PathLike
 from mysql.connector import MySQLConnection
