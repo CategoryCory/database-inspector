@@ -64,16 +64,6 @@ class SqliteDbConnection(DbBase[SqliteConnection, SqliteConnParams]):
                 f"Connection to database failed: {error}", DatabaseType.SQLITE
             ) from error
 
-    def close(self) -> None:
-        """Close the connection to the SQLite database and set the connection to None."""
-
-        if (
-            self._connection is not None
-            and self.get_connection_status() == ConnectionStatus.CONNECTED
-        ):
-            self._connection.close()
-            self._connection = None
-
     def get_connection_status(self) -> ConnectionStatus:
         """
         Retrieve the current database connection status.

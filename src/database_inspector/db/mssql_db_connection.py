@@ -91,16 +91,6 @@ class MSSqlDbConnection(DbBase[MSSQLConnection, ConnectionParams]):
                 f"Connection to database failed: {error}", DatabaseType.MSSQL
             ) from error
 
-    def close(self) -> None:
-        """Close the connection to the Microsoft SQL database and set the connection to None."""
-
-        if (
-            self._connection is not None
-            and self.get_connection_status() == ConnectionStatus.CONNECTED
-        ):
-            self._connection.close()
-            self._connection = None
-
     def get_connection_status(self) -> ConnectionStatus:
         """
         Retrieve the current database connection status.
@@ -109,9 +99,9 @@ class MSSqlDbConnection(DbBase[MSSQLConnection, ConnectionParams]):
         :rtype: ConnectionStatus
         """
 
-        if self._connection is not None and self._connection.closed:
-            return ConnectionStatus.DISCONNECTED
-        return ConnectionStatus.CONNECTED
+        if self._connection is not None and not self._connection.closed:
+            return ConnectionStatus.CONNECTED
+        return ConnectionStatus.DISCONNECTED
 
     def get_tables(self) -> list[str]:
         """

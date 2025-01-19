@@ -100,9 +100,15 @@ class DbBase[ConnectionT, ConnParamsT](ABC):
 
         return self._connection
 
-    @abstractmethod
     def close(self) -> None:
-        """Close the database connection."""
+        """Close the connection to the database and set the connection to None."""
+
+        if (
+            self._connection is not None
+            and self.get_connection_status() == ConnectionStatus.CONNECTED
+        ):
+            self._connection.close()  # type: ignore
+            self._connection = None
 
     @abstractmethod
     def get_connection_status(self) -> ConnectionStatus:

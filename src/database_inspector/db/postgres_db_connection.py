@@ -67,16 +67,6 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
                 f"Connection to database failed: {error}", DatabaseType.POSTGRESQL
             ) from error
 
-    def close(self) -> None:
-        """Close the connection to the PostgreSQL database and set the connection to None."""
-
-        if (
-            self._connection is not None
-            and self.get_connection_status() == ConnectionStatus.CONNECTED
-        ):
-            self._connection.close()  # pylint: disable=E1101
-            self._connection = None
-
     def get_connection_status(self) -> ConnectionStatus:
         """
         Retrieve the current database connection status.
@@ -85,9 +75,9 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
         :rtype: ConnectionStatus
         """
 
-        if self._connection is not None and self._connection.closed:  # pylint: disable=E1101
-            return ConnectionStatus.DISCONNECTED
-        return ConnectionStatus.CONNECTED
+        if self._connection is not None and not self._connection.closed:  # pylint: disable=E1101
+            return ConnectionStatus.CONNECTED
+        return ConnectionStatus.DISCONNECTED
 
     def get_tables(self) -> list[str]:
         """
