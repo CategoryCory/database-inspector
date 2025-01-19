@@ -1,9 +1,9 @@
 """This module defines common type aliases used throughout the application."""
 
+from os import PathLike
 from mysql.connector import MySQLConnection
 from mysql.connector.abstracts import MySQLConnectionAbstract
 from mysql.connector.pooling import PooledMySQLConnection
-from os import PathLike
 
 from database_inspector.infrastructure.models import DbColumn
 
@@ -11,7 +11,7 @@ from database_inspector.infrastructure.models import DbColumn
 type SqliteConnParams = str | bytes | PathLike[str] | PathLike[bytes]
 """Represents the connection parameters for a SQLite database connection."""
 
-type MySQLConnectionTypes = (
+type MySqlConnectionType = (
     MySQLConnection | PooledMySQLConnection | MySQLConnectionAbstract
 )
 """Represents the MySQL connection type returned by `mysql.connector.connect()`."""

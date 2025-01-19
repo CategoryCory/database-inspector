@@ -1,3 +1,15 @@
+"""
+errors.py
+=========
+
+This module implements custom error types used throughout the application.
+
+Exceptions
+----------
+
+- **DbConnectionError**: Custom exception for errors related to the database connection.
+"""
+
 from database_inspector.infrastructure.enums import DatabaseType
 
 

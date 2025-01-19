@@ -1,3 +1,24 @@
+"""
+models.py
+=========
+
+This module provides models and mappings used throughout the application.
+
+Classes
+-------
+
+- **DbColumn**: Represents column information from a database table.
+- **ConnectionParams**: Represents the connection parameters for a database connection.
+
+Objects
+-------
+
+- **python_type_map**: A dictionary that maps Python types to database types. As this map
+is used universally, it is meant to be exhaustive regarding the data types used in the
+database types intended to be supported.
+
+"""
+
 from dataclasses import dataclass
 from datetime import date, datetime
 

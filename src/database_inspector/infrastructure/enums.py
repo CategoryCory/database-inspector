@@ -1,3 +1,16 @@
+"""
+enums.py
+========
+
+This module provides enum types that are used throughout the application.
+
+Classes
+-------
+
+- **DatabaseType**: Provides values to indicate the type of database being used.
+- **ConnectionStatus**: Provides values to indicate the status of the database connection.
+"""
+
 from enum import auto, Enum
 
 

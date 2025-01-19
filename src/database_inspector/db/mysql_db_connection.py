@@ -30,10 +30,10 @@ from database_inspector.db.db_base import DbBase
 from database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
 from database_inspector.infrastructure.errors import DbConnectionError
 from database_inspector.infrastructure.models import ConnectionParams, DbColumn
-from database_inspector.infrastructure.types import MySQLConnectionTypes
+from database_inspector.infrastructure.types import MySqlConnectionType
 
 
-class MySqlDbConnection(DbBase[MySQLConnectionTypes, ConnectionParams]):
+class MySqlDbConnection(DbBase[MySqlConnectionType, ConnectionParams]):
     """A class for inspecting MySQL databases."""
 
     def __init__(self, connection_params: ConnectionParams) -> None:
@@ -45,7 +45,7 @@ class MySqlDbConnection(DbBase[MySQLConnectionTypes, ConnectionParams]):
         """
 
         super().__init__(connection_params)
-        self._connection: MySQLConnectionTypes | None = None
+        self._connection: MySqlConnectionType | None = None
         self._connect()
 
     def _connect(self) -> None:
