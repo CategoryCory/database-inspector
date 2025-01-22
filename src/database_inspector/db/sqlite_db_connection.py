@@ -28,7 +28,7 @@ from typing import cast, LiteralString
 
 from database_inspector.db.db_base import DbBase
 from database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
-from database_inspector.infrastructure.errors import DbConnectionError
+from database_inspector.infrastructure.errors import DatabaseConnectionError
 from database_inspector.infrastructure.models import DbColumn
 from database_inspector.infrastructure.types import SqliteConnParams
 
@@ -60,7 +60,7 @@ class SqliteDbConnection(DbBase[SqliteConnection, SqliteConnParams]):
         try:
             self._connection = sqlite3.connect(self._connection_params)
         except sqlite3.Error as error:
-            raise DbConnectionError(
+            raise DatabaseConnectionError(
                 f"Connection to database failed: {error}", DatabaseType.SQLITE
             ) from error
 
@@ -93,7 +93,7 @@ class SqliteDbConnection(DbBase[SqliteConnection, SqliteConnParams]):
             self._connection is None
             or self.get_connection_status() == ConnectionStatus.DISCONNECTED
         ):
-            raise DbConnectionError(
+            raise DatabaseConnectionError(
                 "Connection to SQLite database was unexpectedly closed.",
                 DatabaseType.SQLITE,
             )
@@ -123,7 +123,7 @@ class SqliteDbConnection(DbBase[SqliteConnection, SqliteConnParams]):
             self._connection is None
             or self.get_connection_status() == ConnectionStatus.DISCONNECTED
         ):
-            raise DbConnectionError(
+            raise DatabaseConnectionError(
                 "Connection to SQLite database was unexpectedly closed.",
                 DatabaseType.SQLITE,
             )

@@ -7,18 +7,20 @@ This module implements custom error types used throughout the application.
 Exceptions
 ----------
 
-- **DbConnectionError**: Custom exception for errors related to the database connection.
+- **DatabaseError**: The base class for database errors.
+- **DatabaseConnectionError**: Custom exception for errors related to the database connection.
+- **DatabaseQueryError**: Custom exception for errors related to the database query.
 """
 
 from database_inspector.infrastructure.enums import DatabaseType
 
 
-class DbConnectionError(ConnectionError):
-    """Custom exception raised when database connection fails."""
+class DatabaseError(Exception):
+    """Base class for database errors."""
 
     def __init__(self, message: str, db_type: DatabaseType) -> None:
         """
-        Initialize an instance of the DbConnectionError class.
+        Initialize an instance of the DatabaseError class.
 
         :param message: The error message.
         :type message: str
@@ -26,9 +28,9 @@ class DbConnectionError(ConnectionError):
         :type db_type: DatabaseType
         """
 
-        self._message = message
-        self._db_type = db_type
-        super().__init__(self._message)
+        self.message = message
+        self.db_type = db_type
+        super().__init__(self.message)
 
     def __str__(self) -> str:
         """
@@ -38,4 +40,12 @@ class DbConnectionError(ConnectionError):
         :rtype: str
         """
 
-        return f"{self._message} ({self._db_type})"
+        return f"{self.message} ({self.db_type.name})"
+
+
+class DatabaseConnectionError(DatabaseError):
+    """Custom exception raised when database connection fails."""
+
+
+class DatabaseTableNotFoundError(DatabaseError):
+    """Custom exception raised when a database table does not exist."""

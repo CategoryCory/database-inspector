@@ -34,7 +34,10 @@ from pyodbc import Connection as MSSQLConnection, Cursor as MSSQLCursor  # pylin
 
 from database_inspector.db.db_base import DbBase
 from database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
-from database_inspector.infrastructure.errors import DbConnectionError
+from database_inspector.infrastructure.errors import (
+    DatabaseConnectionError,
+    DatabaseTableNotFoundError,
+)
 from database_inspector.infrastructure.models import ConnectionParams, DbColumn
 
 
@@ -87,7 +90,7 @@ class MSSqlDbConnection(DbBase[MSSQLConnection, ConnectionParams]):
         try:
             self._connection = pyodbc.connect(conn_str)  # pylint: disable=I1101
         except pyodbc.Error as error:  # pylint: disable=I1101
-            raise DbConnectionError(
+            raise DatabaseConnectionError(
                 f"Connection to database failed: {error}", DatabaseType.MSSQL
             ) from error
 
@@ -116,7 +119,7 @@ class MSSqlDbConnection(DbBase[MSSQLConnection, ConnectionParams]):
             self._connection is None
             or self.get_connection_status() == ConnectionStatus.DISCONNECTED
         ):
-            raise DbConnectionError(
+            raise DatabaseConnectionError(
                 "Connection to SQL Server database was unexpectedly closed.",
                 DatabaseType.MSSQL,
             )
@@ -144,31 +147,46 @@ class MSSqlDbConnection(DbBase[MSSQLConnection, ConnectionParams]):
         :return: A list of column information in `table_name`.
         :rtype: list[DbColumn]
         :raises DbConnectionError: If the connection is closed.
+        :raises DatabaseTableNotFoundError: If the table is not found.
         """
 
         if (
             self._connection is None
             or self.get_connection_status() == ConnectionStatus.DISCONNECTED
         ):
-            raise DbConnectionError(
+            raise DatabaseConnectionError(
                 "Connection to SQL Server database was unexpectedly closed.",
                 DatabaseType.MSSQL,
             )
 
-        query: LiteralString = cast(
-            LiteralString,
-            f"""
-        SELECT column_name, data_type, is_nullable
-        FROM information_schema.columns
-        WHERE table_name = N'{table_name}';
-        """,
-        )
-        table_cols: list[DbColumn] = []
-
         with self._connection.cursor() as cursor:
+            check_table_exists_query = cast(
+                LiteralString,
+                (
+                    f"IF EXISTS(SELECT * FROM information_schema.tables "
+                    f"WHERE table_name = '{table_name}') "
+                    f"SELECT 1 AS table_exists ELSE SELECT 0 AS table_exists;"
+                ),
+            )
+            result = cursor.execute(check_table_exists_query).fetchone()
+            if result[0] == 0:
+                raise DatabaseTableNotFoundError(
+                    f"The specified table {table_name} does not exist.",
+                    DatabaseType.MSSQL,
+                )
+
+            query: LiteralString = cast(
+                LiteralString,
+                (
+                    f"SELECT column_name, data_type, is_nullable "
+                    f"FROM information_schema.columns "
+                    f"WHERE table_name = N'{table_name}';"
+                ),
+            )
+            table_cols: list[DbColumn] = []
+
             cursor.execute(query)
             columns = db_results_to_dict(cursor)
-            print(columns)
             for c in columns:
                 table_cols.append(
                     DbColumn(
@@ -178,4 +196,4 @@ class MSSqlDbConnection(DbBase[MSSQLConnection, ConnectionParams]):
                     )
                 )
 
-        return table_cols
+            return table_cols

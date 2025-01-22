@@ -24,7 +24,7 @@ class DatabaseType(Enum):
     SQLITE = 0
     """A SQLite database type."""
 
-    POSTGRESQL = auto()
+    POSTGRES = auto()
     """A PostgreSQL database type."""
 
     MYSQL = auto()

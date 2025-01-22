@@ -29,7 +29,10 @@ from psycopg.rows import dict_row
 
 from database_inspector.db.db_base import DbBase
 from database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
-from database_inspector.infrastructure.errors import DbConnectionError
+from database_inspector.infrastructure.errors import (
+    DatabaseConnectionError,
+    DatabaseTableNotFoundError,
+)
 from database_inspector.infrastructure.models import ConnectionParams, DbColumn
 
 
@@ -52,7 +55,7 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
         """
         Open a connection to the PostgreSQL database.
 
-        :raises DbConnectionError: If the connection is unsuccessful.
+        :raises DatabaseConnectionError: If the connection is unsuccessful.
         """
 
         try:
@@ -63,8 +66,8 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
             )
             self._connection = psycopg.connect(conn_str)
         except psycopg.Error as error:
-            raise DbConnectionError(
-                f"Connection to database failed: {error}", DatabaseType.POSTGRESQL
+            raise DatabaseConnectionError(
+                f"Connection to database failed: {error}", DatabaseType.POSTGRES
             ) from error
 
     def get_connection_status(self) -> ConnectionStatus:
@@ -85,16 +88,16 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
 
         :return: A list of the tables in the database.
         :rtype: list[str]
-        :raises DbConnectionError: If the connection is closed.
+        :raises DatabaseConnectionError: If the connection is closed.
         """
 
         if (
             self._connection is None
             or self.get_connection_status() == ConnectionStatus.DISCONNECTED
         ):
-            raise DbConnectionError(
+            raise DatabaseConnectionError(
                 "Connection to PostgreSQL database was unexpectedly closed.",
-                DatabaseType.POSTGRESQL,
+                DatabaseType.POSTGRES,
             )
 
         query: LiteralString = """
@@ -115,30 +118,48 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
         :type table_name: str
         :return: A list of column information in `table_name`.
         :rtype: list[DbColumn]
-        :raises DbConnectionError: If the connection is closed.
+        :raises DatabaseConnectionError: If the connection is closed.
+        :raises DatabaseTableNotFoundError: If the table is not found.
         """
 
         if (
             self._connection is None
             or self.get_connection_status() == ConnectionStatus.DISCONNECTED
         ):
-            raise DbConnectionError(
+            raise DatabaseConnectionError(
                 "Connection to PostgreSQL database was unexpectedly closed.",
-                DatabaseType.POSTGRESQL,
+                DatabaseType.POSTGRES,
             )
 
-        query: LiteralString = cast(
-            LiteralString,
-            (
-                f"SELECT column_name, data_type, is_nullable "
-                f"FROM information_schema.columns "
-                f"WHERE table_name = '{table_name}';"
-            ),
-        )
-        table_cols: list[DbColumn] = []
-
         with self._connection.cursor(row_factory=dict_row) as cursor:  # pylint: disable=E1101
-            cursor.execute(query)
+            get_current_schema_query: LiteralString = "SELECT CURRENT_SCHEMA;"
+            result = cursor.execute(get_current_schema_query).fetchall()
+            current_schema = result[0]["current_schema"]
+
+            check_table_exists_query: LiteralString = cast(
+                LiteralString, f"SELECT to_regclass('{current_schema}.{table_name}');"
+            )
+            result = cursor.execute(check_table_exists_query).fetchall()
+            table_regclass = result[0]["to_regclass"]
+
+            if table_regclass is None:
+                raise DatabaseTableNotFoundError(
+                    f"The specified table {table_name} does not exist.",
+                    DatabaseType.POSTGRES,
+                )
+
+            get_columns_query: LiteralString = cast(
+                LiteralString,
+                (
+                    f"SELECT column_name, data_type, is_nullable "
+                    f"FROM information_schema.columns "
+                    f"WHERE table_schema = '{current_schema}' "
+                    f"AND table_name = '{table_name}';"
+                ),
+            )
+            table_cols: list[DbColumn] = []
+
+            cursor.execute(get_columns_query)
             columns = cursor.fetchall()
             for c in columns:
                 table_cols.append(
@@ -149,4 +170,4 @@ class PostgresDbConnection(DbBase[PostgresConnection, ConnectionParams]):
                     )
                 )
 
-        return table_cols
+            return table_cols

@@ -25,10 +25,17 @@ Usage Example
 from dataclasses import asdict
 from typing import cast, LiteralString
 import mysql.connector
+from mysql.connector.errors import (
+    Error as MySQLError,
+    ProgrammingError as MySQLProgrammingError,
+)
 
 from database_inspector.db.db_base import DbBase
 from database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
-from database_inspector.infrastructure.errors import DbConnectionError
+from database_inspector.infrastructure.errors import (
+    DatabaseConnectionError,
+    DatabaseTableNotFoundError,
+)
 from database_inspector.infrastructure.models import ConnectionParams, DbColumn
 from database_inspector.infrastructure.types import MySqlConnectionType
 
@@ -62,7 +69,7 @@ class MySqlDbConnection(DbBase[MySqlConnectionType, ConnectionParams]):
                 autocommit=True,
             )
         except mysql.connector.Error as error:
-            raise DbConnectionError(
+            raise DatabaseConnectionError(
                 f"Connection to database failed: {error}", DatabaseType.MYSQL
             ) from error
 
@@ -91,7 +98,7 @@ class MySqlDbConnection(DbBase[MySqlConnectionType, ConnectionParams]):
             self._connection is None
             or self.get_connection_status() == ConnectionStatus.DISCONNECTED
         ):
-            raise DbConnectionError(
+            raise DatabaseConnectionError(
                 "Connection to MySQL database was unexpectedly closed.",
                 DatabaseType.MYSQL,
             )
@@ -113,13 +120,14 @@ class MySqlDbConnection(DbBase[MySqlConnectionType, ConnectionParams]):
         :return: A list of column information in `table_name`.
         :rtype: list[DbColumn]
         :raises DbConnectionError: If the connection is closed.
+        :raises DatabaseTableNotFoundError: If the table is not found.
         """
 
         if (
             self._connection is None
             or self.get_connection_status() == ConnectionStatus.DISCONNECTED
         ):
-            raise DbConnectionError(
+            raise DatabaseConnectionError(
                 "Connection to MySQL database was unexpectedly closed.",
                 DatabaseType.MYSQL,
             )
@@ -128,15 +136,21 @@ class MySqlDbConnection(DbBase[MySqlConnectionType, ConnectionParams]):
         table_cols: list[DbColumn] = []
 
         with self._connection.cursor(dictionary=True) as cursor:
-            cursor.execute(query)
-            columns = cast(list[dict], cursor.fetchall())
-            for c in columns:
-                table_cols.append(
-                    DbColumn(
-                        name=c["Field"],
-                        datatype=self._get_python_type(c["Type"]),
-                        is_nullable=c["Null"].lower() == "yes",
+            try:
+                cursor.execute(query)
+                columns = cast(list[dict], cursor.fetchall())
+                for c in columns:
+                    table_cols.append(
+                        DbColumn(
+                            name=c["Field"],
+                            datatype=self._get_python_type(c["Type"]),
+                            is_nullable=c["Null"].lower() == "yes",
+                        )
                     )
-                )
 
-        return table_cols
+                return table_cols
+            except (MySQLError, MySQLProgrammingError) as error:
+                raise DatabaseTableNotFoundError(
+                    f"The specified table {table_name} does not exist.",
+                    DatabaseType.MYSQL,
+                ) from error
