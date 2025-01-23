@@ -17,12 +17,14 @@ Functions
 """
 
 from collections.abc import Generator
+from contextlib import nullcontext
 from pathlib import Path
 import pytest
+from pytest_lazy_fixtures import lf
 
 from database_inspector.db.db_base import DbBase
 from database_inspector.infrastructure.enums import ConnectionStatus
-from database_inspector.infrastructure.models import DbColumn
+from database_inspector.infrastructure.errors import DatabaseTableNotFoundError
 from database_inspector.db.sqlite_db_connection import SqliteDbConnection
 from .common import expected_test_table_results, expected_test_table_2_results
 
@@ -41,8 +43,21 @@ def fixture_db_path(tmp_path: Path) -> Path:
     return tmp_path / "test.db"
 
 
-@pytest.fixture(name="sqlite_connection")
-def fixture_sqlite_connection() -> Generator[DbBase, None, None]:
+@pytest.fixture(name="empty_sqlite_connection")
+def fixture_empty_sqlite_connection() -> Generator[DbBase, None, None]:
+    """
+    A test fixture to provide an empty SQLite database connection.
+
+    :return: A generator that yields an empty `DbBase` instance.
+    :rtype: Generator[DbBase, None, None]
+    """
+
+    with SqliteDbConnection(":memory:") as connection:
+        yield connection
+
+
+@pytest.fixture(name="populated_sqlite_connection")
+def fixture_populated_sqlite_connection() -> Generator[DbBase, None, None]:
     """
     A test fixture to provide a properly connected and configured SQLite in-memory
     database.
@@ -75,71 +90,76 @@ class TestSqliteDBConnection:
 
     def test_sqlite_db_connects_to_db(self, db_path: Path) -> None:
         """
-        A test method to verify that a SQLite file is properly created during initialization.
+        A test method to verify that a SQLite connection works properly.
 
         :param db_path: The expected path to a SQLite database file.
         :type db_path: `pathlib.Path`
         """
 
-        with SqliteDbConnection(db_path):
+        with SqliteDbConnection(db_path) as db:
             assert db_path.exists()
+            assert db.get_connection_status() == ConnectionStatus.CONNECTED
+            assert db.connection is not None
 
-    def test_sqlite_db_disconnects_from_db(self, db_path: Path) -> None:
-        """
-        A test method to verify that a SQLite connection is properly disconnected.
+        assert db.get_connection_status() == ConnectionStatus.DISCONNECTED
+        assert db.connection is None
 
-        :param db_path: The expected path to a SQLite database file.
-        :type db_path: `pathlib.Path`
-        """
-
-        with SqliteDbConnection(db_path) as connection:
-            pass
-
-        assert connection.get_connection_status() == ConnectionStatus.DISCONNECTED
-
-    def test_sqlite_get_tables(self, sqlite_connection: SqliteDbConnection) -> None:
+    @pytest.mark.parametrize(
+        "db, expected",
+        [
+            pytest.param(lf("empty_sqlite_connection"), []),
+            pytest.param(
+                lf("populated_sqlite_connection"), ["test_table", "test_table_2"]
+            ),
+        ],
+    )
+    def test_sqlite_get_tables(self, db: DbBase, expected: list[str]) -> None:
         """
         Test whether the `get_tables` method works correctly.
 
-        :param sqlite_connection: The working database fixture.
-        :type sqlite_connection: SqliteDbConnection
+        :param db: The working database fixture.
+        :type db: DbBase
         """
 
-        tables = sqlite_connection.get_tables()
-        assert len(tables) == 2
-        assert "test_table" in tables
-        assert "test_table_2" in tables
+        tables = db.get_tables()
+        assert len(tables) == len(expected)
+        assert tables == expected
 
     @pytest.mark.parametrize(
-        "table_name, expected_columns",
+        "table_name, expected",
         [
             pytest.param(
                 "test_table",
-                expected_test_table_results,
+                nullcontext(expected_test_table_results),
             ),
             pytest.param(
                 "test_table_2",
-                expected_test_table_2_results,
+                nullcontext(expected_test_table_2_results),
+            ),
+            pytest.param(
+                "fake_table",
+                pytest.raises(DatabaseTableNotFoundError),
             ),
         ],
     )
     def test_sqlite_get_columns(
         self,
-        sqlite_connection: SqliteDbConnection,
+        populated_sqlite_connection: SqliteDbConnection,
         table_name: str,
-        expected_columns: list[DbColumn],
+        expected: nullcontext,
     ) -> None:
         """
         Test whether the `get_columns` method works correctly.
 
-        :param sqlite_connection: The working database fixture.
-        :type sqlite_connection: SqliteDbConnection
+        :param populated_sqlite_connection: The working database fixture.
+        :type populated_sqlite_connection: SqliteDbConnection
         :param table_name: The name of the table to test.
         :type table_name: str
-        :param expected_columns: The expected column information.
-        :type expected_columns: list[DbColumn]
+        :param expected: The expected column information.
+        :type expected: list[DbColumn]
         """
 
-        columns = sqlite_connection.get_columns(table_name)
-        assert len(columns) == len(expected_columns)
-        assert columns == expected_columns
+        with expected as e:
+            columns = populated_sqlite_connection.get_columns(table_name)
+            assert len(columns) == len(e)
+            assert columns == e

@@ -28,7 +28,10 @@ from typing import cast, LiteralString
 
 from database_inspector.db.db_base import DbBase
 from database_inspector.infrastructure.enums import ConnectionStatus, DatabaseType
-from database_inspector.infrastructure.errors import DatabaseConnectionError
+from database_inspector.infrastructure.errors import (
+    DatabaseConnectionError,
+    DatabaseTableNotFoundError,
+)
 from database_inspector.infrastructure.models import DbColumn
 from database_inspector.infrastructure.types import SqliteConnParams
 
@@ -117,6 +120,7 @@ class SqliteDbConnection(DbBase[SqliteConnection, SqliteConnParams]):
         :return: A list of column information in `table_name`.
         :rtype: list[DbColumn]
         :raises DbConnectionError: If the connection is closed.
+        :raises DbTableNotFoundError: If the table is not found.
         """
 
         if (
@@ -125,6 +129,20 @@ class SqliteDbConnection(DbBase[SqliteConnection, SqliteConnParams]):
         ):
             raise DatabaseConnectionError(
                 "Connection to SQLite database was unexpectedly closed.",
+                DatabaseType.SQLITE,
+            )
+
+        check_table_exists_query = cast(
+            LiteralString,
+            (
+                f"SELECT EXISTS(SELECT 1 FROM sqlite_master "
+                f"WHERE type='table' AND name = '{table_name}');"
+            ),
+        )
+        result = self._connection.execute(check_table_exists_query).fetchone()
+        if result[0] == 0:
+            raise DatabaseTableNotFoundError(
+                f"The specified table {table_name} does not exist.",
                 DatabaseType.SQLITE,
             )
 
