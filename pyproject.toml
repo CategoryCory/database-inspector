@@ -23,6 +23,7 @@ pylint = "^3.3.3"
 pytest = "^8.3.4"
 testcontainers = {extras = ["mssql", "postgres", "mysql"], version = "^4.9.0"}
 pytest-lazy-fixtures = "^1.1.1"
+pytest-xdist = "^3.6.1"
 
 
 [tool.poetry.group.postgres.dependencies]
