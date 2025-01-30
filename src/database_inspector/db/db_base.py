@@ -28,6 +28,7 @@ from typing import Any, Self
 
 from database_inspector.infrastructure.enums import ConnectionStatus
 from database_inspector.infrastructure.models import DbColumn, python_type_map
+from database_inspector.infrastructure.types import DbSchema
 
 
 class DbBase[ConnectionT, ConnParamsT](ABC):
@@ -138,6 +139,23 @@ class DbBase[ConnectionT, ConnParamsT](ABC):
         :return: A list of column information in `table_name`.
         :rtype: list[DbColumn]
         """
+
+    def extract_schema(self) -> DbSchema:
+        """
+        Retrieves the current database schema from the database.
+
+        :return: The database schema.
+        :rtype: DbSchema
+        """
+
+        schema: DbSchema = {}
+
+        tables = self.get_tables()
+        for table in tables:
+            columns = self.get_columns(table)
+            schema[table] = columns
+
+        return schema
 
     def _get_python_type(self, db_type: str) -> type | None:
         """

@@ -13,7 +13,9 @@ Functions
 ---------
 
 - **db_path(tmp_path)**: A fixture providing a path to a SQLite database file.
-- **sqlite_connection()**: A fixture providing a SQLite in-memory connection.
+- **fixture_empty_sqlite_connection()**: A fixture providing an empty SQLite in-memory connection.
+- **fixture_populated_sqlite_connection()**: A fixture providing a populated SQLite in-memory
+connection.
 """
 
 from collections.abc import Generator
@@ -23,10 +25,14 @@ import pytest
 from pytest_lazy_fixtures import lf
 
 from database_inspector.db.db_base import DbBase
+from database_inspector.db.sqlite_db_connection import SqliteDbConnection
 from database_inspector.infrastructure.enums import ConnectionStatus
 from database_inspector.infrastructure.errors import DatabaseTableNotFoundError
-from database_inspector.db.sqlite_db_connection import SqliteDbConnection
-from .common import expected_test_table_results, expected_test_table_2_results
+from .common import (
+    expected_test_table_columns,
+    expected_test_table_2_columns,
+    expected_test_schema,
+)
 
 
 @pytest.fixture(name="db_path")
@@ -130,11 +136,11 @@ class TestSqliteDBConnection:
         [
             pytest.param(
                 "test_table",
-                nullcontext(expected_test_table_results),
+                nullcontext(expected_test_table_columns),
             ),
             pytest.param(
                 "test_table_2",
-                nullcontext(expected_test_table_2_results),
+                nullcontext(expected_test_table_2_columns),
             ),
             pytest.param(
                 "fake_table",
@@ -163,3 +169,15 @@ class TestSqliteDBConnection:
             columns = populated_sqlite_connection.get_columns(table_name)
             assert len(columns) == len(e)
             assert columns == e
+
+    def test_db_extract_schema(self, populated_sqlite_connection: DbBase) -> None:
+        """
+        Test whether the `extract_schema` method works correctly.
+
+        :param populated_sqlite_connection: The database fixture.
+        :type populated_sqlite_connection: DbBase
+        """
+
+        schema = populated_sqlite_connection.extract_schema()
+        assert isinstance(schema, dict)
+        assert schema == expected_test_schema
